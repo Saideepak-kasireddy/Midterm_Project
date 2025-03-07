@@ -1,0 +1,63 @@
+{
+	"name": "TitleRatingspar",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "TitleRatingscsv",
+						"type": "DatasetReference"
+					},
+					"name": "TitleRatingscsv"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "TitleRatingsParquet",
+						"type": "DatasetReference"
+					},
+					"name": "TitleRatingsparquet"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				}
+			],
+			"scriptLines": [
+				"parameters{",
+				"     Job_Id as string (\"10\")",
+				"}",
+				"source(output(",
+				"          tconst as string,",
+				"          averageRating as double,",
+				"          numVotes as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> TitleRatingscsv",
+				"TitleRatingscsv derive(Job_ID = $Job_Id,",
+				"          Created_Date = toString(currentDate(),'yyyy-MM-dd')) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'parquet',",
+				"     partitionFileNames:['TitleRatings.parquet'],",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     mapColumn(",
+				"          tconst,",
+				"          averageRating,",
+				"          numVotes,",
+				"          Job_ID,",
+				"          Created_Date",
+				"     ),",
+				"     partitionBy('hash', 1)) ~> TitleRatingsparquet"
+			]
+		}
+	}
+}
