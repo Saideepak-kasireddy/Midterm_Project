@@ -1,0 +1,10 @@
+{
+	"name": "AzureKeyVault1_mid",
+	"properties": {
+		"annotations": [],
+		"type": "AzureKeyVault",
+		"typeProperties": {
+			"baseUrl": "https://damg7370kvspring2025vs.vault.azure.net/"
+		}
+	}
+}
