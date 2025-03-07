@@ -1,0 +1,11 @@
+{
+	"name": "AzureBlobStorage_LS",
+	"properties": {
+		"annotations": [],
+		"type": "AzureBlobStorage",
+		"typeProperties": {
+			"serviceEndpoint": "https://workshopdeepak.blob.core.windows.net/",
+			"accountKind": "StorageV2"
+		}
+	}
+}
