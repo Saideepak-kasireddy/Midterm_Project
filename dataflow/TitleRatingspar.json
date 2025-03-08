@@ -14,10 +14,6 @@
 			],
 			"sinks": [
 				{
-					"dataset": {
-						"referenceName": "TitleRatingsParquet",
-						"type": "DatasetReference"
-					},
 					"name": "TitleRatingsparquet"
 				}
 			],
@@ -42,11 +38,7 @@
 				"          Created_Date = toString(currentDate(),'yyyy-MM-dd')) ~> derivedColumn1",
 				"derivedColumn1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
-				"     format: 'parquet',",
 				"     partitionFileNames:['TitleRatings.parquet'],",
-				"     umask: 0022,",
-				"     preCommands: [],",
-				"     postCommands: [],",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
 				"     mapColumn(",
@@ -56,7 +48,10 @@
 				"          Job_ID,",
 				"          Created_Date",
 				"     ),",
-				"     partitionBy('hash', 1)) ~> TitleRatingsparquet"
+				"     partitionBy('hash', 1),",
+				"     format: 'parquet',",
+				"     preCommands: [],",
+				"     postCommands: []) ~> TitleRatingsparquet"
 			]
 		}
 	}
