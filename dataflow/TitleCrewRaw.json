@@ -1,0 +1,63 @@
+{
+	"name": "TitleCrewRaw",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "TitleCrewRawcsv",
+						"type": "DatasetReference"
+					},
+					"name": "TitleCrewRaw"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "Snowflake_RawTitleCrew",
+						"type": "DatasetReference"
+					},
+					"name": "TitleCrewRawstage"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				}
+			],
+			"scriptLines": [
+				"parameters{",
+				"     Job_ID as string (\"10\")",
+				"}",
+				"source(output(",
+				"          tconst as string,",
+				"          directors as string,",
+				"          writers as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> TitleCrewRaw",
+				"TitleCrewRaw derive(Job_ID = $Job_ID,",
+				"          CREATED_DATE = toString(currentDate(),'yyyy-MM-dd')) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     stageInsert: true,",
+				"     mapColumn(",
+				"          TCONST = tconst,",
+				"          DIRECTORS = directors,",
+				"          WRITERS = writers,",
+				"          JOB_ID = Job_ID,",
+				"          CREATED_DATE",
+				"     )) ~> TitleCrewRawstage"
+			]
+		}
+	}
+}
