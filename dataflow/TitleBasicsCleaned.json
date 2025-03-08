@@ -1,0 +1,85 @@
+{
+	"name": "TitleBasicsCleaned",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "Snowflake_RawTitleBasics",
+						"type": "DatasetReference"
+					},
+					"name": "TitleBasicsRaw"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "Parquet_TitleBasics",
+						"type": "DatasetReference"
+					},
+					"name": "TitleBasicsClean"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				}
+			],
+			"scriptLines": [
+				"parameters{",
+				"     Job_ID as string (\"10\")",
+				"}",
+				"source(output(",
+				"          TCONST as string,",
+				"          TITLETYPE as string,",
+				"          PRIMARYTITLE as string,",
+				"          ORIGINALTITLE as string,",
+				"          ISADULT as boolean,",
+				"          STARTYEAR as string,",
+				"          ENDYEAR as string,",
+				"          RUNTIMEMINUTES as string,",
+				"          GENRES as string,",
+				"          JOB_ID as string,",
+				"          CREATED_DATE as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> TitleBasicsRaw",
+				"TitleBasicsRaw derive(JOB_ID = $Job_ID,",
+				"          CREATED_DATE = toString(currentDate(),'yyyy-MM-dd'),",
+				"          STARTYEAR = iif(trim(toString(STARTYEAR)) == '\\\\N', 'Unknown', toString(STARTYEAR)),",
+				"          ENDYEAR = iif(trim(toString(ENDYEAR)) == '\\\\N', 'Unknown', toString(ENDYEAR)),",
+				"          RUNTIMEMINUTES = iif(trim(toString(RUNTIMEMINUTES)) == '\\\\N', 'Unknown', toString(RUNTIMEMINUTES)),",
+				"          GENRES = iif(trim(toString(GENRES)) == '\\\\N', 'Unknown', toString(GENRES)),",
+				"          PRIMARYTITLE = trim(PRIMARYTITLE)\r",
+				",",
+				"          ORIGINALTITLE = trim(ORIGINALTITLE)\r",
+				") ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'parquet',",
+				"     partitionFileNames:['TitleBasics.parquet'],",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     mapColumn(",
+				"          TCONST,",
+				"          TITLETYPE,",
+				"          PRIMARYTITLE,",
+				"          ORIGINALTITLE,",
+				"          ISADULT,",
+				"          STARTYEAR,",
+				"          ENDYEAR,",
+				"          RUNTIMEMINUTES,",
+				"          GENRES,",
+				"          JOB_ID,",
+				"          CREATED_DATE",
+				"     ),",
+				"     partitionBy('hash', 1)) ~> TitleBasicsClean"
+			]
+		}
+	}
+}
