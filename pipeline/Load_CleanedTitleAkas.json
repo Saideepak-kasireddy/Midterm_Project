@@ -1,0 +1,203 @@
+{
+	"name": "Load_CleanedTitleAkas",
+	"properties": {
+		"activities": [
+			{
+				"name": "TitleAkasParquet",
+				"type": "ExecuteDataFlow",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Succeeded",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "TitleAkasClean",
+						"type": "DataFlowReference",
+						"parameters": {
+							"Job_ID": {
+								"value": "'@{pipeline().RunId}'",
+								"type": "Expression"
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "TitlrAkasstage",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "TitleAkasParquet",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.00:30:00",
+					"retry": 1,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "ParquetSource",
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": true,
+							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "ParquetReadSettings"
+						}
+					},
+					"sink": {
+						"type": "SnowflakeV2Sink",
+						"importSettings": {
+							"type": "SnowflakeImportCopyCommand"
+						}
+					},
+					"enableStaging": true,
+					"stagingSettings": {
+						"linkedServiceName": {
+							"referenceName": "AzureBlobStorage",
+							"type": "LinkedServiceReference"
+						}
+					},
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"name": "TITLEID",
+									"type": "String"
+								},
+								"sink": {
+									"name": "TITLEID",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "ORDERING",
+									"type": "Decimal"
+								},
+								"sink": {
+									"name": "ORDERING",
+									"type": "Int64"
+								}
+							},
+							{
+								"source": {
+									"name": "TITLE",
+									"type": "String"
+								},
+								"sink": {
+									"name": "TITLE",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "REGION",
+									"type": "String"
+								},
+								"sink": {
+									"name": "REGION",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "LANGUAGE",
+									"type": "String"
+								},
+								"sink": {
+									"name": "LANGUAGE",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "TYPES",
+									"type": "String"
+								},
+								"sink": {
+									"name": "TYPES",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "ATTRIBUTES",
+									"type": "String"
+								},
+								"sink": {
+									"name": "ATTRIBUTES",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "ISORIGINALTITLE",
+									"type": "Boolean"
+								},
+								"sink": {
+									"name": "ISORIGINALTITLE",
+									"type": "Boolean"
+								}
+							},
+							{
+								"source": {
+									"name": "JOB_ID",
+									"type": "String"
+								},
+								"sink": {
+									"name": "JOB_ID",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "CREATED_DATE",
+									"type": "String"
+								},
+								"sink": {
+									"name": "CREATED_DATE",
+									"type": "DateTime"
+								}
+							}
+						]
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "Parquet_TitleAkas",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "Snowflake_TitleAkas",
+						"type": "DatasetReference"
+					}
+				]
+			}
+		],
+		"annotations": []
+	}
+}
