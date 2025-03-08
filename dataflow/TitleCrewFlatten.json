@@ -1,0 +1,93 @@
+{
+	"name": "TitleCrewFlatten",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "Snowflake_CleanTitleCrew",
+						"type": "DatasetReference"
+					},
+					"name": "TitleCrewFlatten"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "Parquet_TitleCrewFlatten",
+						"type": "DatasetReference"
+					},
+					"name": "TitleCrewFlattenParquet"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "flatten1"
+				},
+				{
+					"name": "flatten2"
+				}
+			],
+			"scriptLines": [
+				"parameters{",
+				"     Job_ID as string (\"10\")",
+				"}",
+				"source(output(",
+				"          TCONST as string,",
+				"          DIRECTORS as string,",
+				"          WRITERS as string,",
+				"          JOB_ID as string,",
+				"          CREATED_DATE as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> TitleCrewFlatten",
+				"TitleCrewFlatten derive(DIRECTORS = split(DIRECTORS, ','),",
+				"          WRITERS = split(WRITERS, ','),",
+				"          JOB_ID = $Job_ID,",
+				"          CREATED_DATE = toString(currentDate(),'yyyy-MM-dd')) ~> derivedColumn1",
+				"derivedColumn1 foldDown(unroll(DIRECTORS),",
+				"     mapColumn(",
+				"          TCONST,",
+				"          DIRECTORS,",
+				"          WRITERS,",
+				"          JOB_ID,",
+				"          CREATED_DATE",
+				"     ),",
+				"     skipDuplicateMapInputs: false,",
+				"     skipDuplicateMapOutputs: false) ~> flatten1",
+				"flatten1 foldDown(unroll(WRITERS),",
+				"     mapColumn(",
+				"          TCONST,",
+				"          DIRECTORS,",
+				"          WRITERS,",
+				"          JOB_ID,",
+				"          CREATED_DATE",
+				"     ),",
+				"     skipDuplicateMapInputs: false,",
+				"     skipDuplicateMapOutputs: false) ~> flatten2",
+				"flatten2 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'parquet',",
+				"     partitionFileNames:['TitleCrewFlatten.parquet'],",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     mapColumn(",
+				"          TCONST,",
+				"          DIRECTORS,",
+				"          WRITERS,",
+				"          JOB_ID,",
+				"          CREATED_DATE",
+				"     ),",
+				"     partitionBy('hash', 1)) ~> TitleCrewFlattenParquet"
+			]
+		}
+	}
+}
