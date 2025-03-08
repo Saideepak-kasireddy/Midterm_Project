@@ -1,0 +1,86 @@
+{
+	"name": "TitlePrincipalsClean",
+	"properties": {
+		"description": "Cleaning raw stage table for Principals",
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "Snowflake_RawTitlePrincipals",
+						"type": "DatasetReference"
+					},
+					"name": "TitlePrincipalsRaw"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ParquetTitlePrincipals",
+						"type": "DatasetReference"
+					},
+					"name": "TitlePrincipalsClean",
+					"description": "Cleaned Principals"
+				}
+			],
+			"transformations": [
+				{
+					"name": "Cleaning"
+				}
+			],
+			"scriptLines": [
+				"parameters{",
+				"     JOB_ID as string (\"10\")",
+				"}",
+				"source(output(",
+				"          TCONST as string,",
+				"          ORDERING as decimal(38,0),",
+				"          NCONST as string,",
+				"          CATEGORY as string,",
+				"          JOB as string,",
+				"          CHARACTERS as string,",
+				"          JOB_ID as string,",
+				"          CREATED_DATE as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> TitlePrincipalsRaw",
+				"TitlePrincipalsRaw derive(JOB_ID = $JOB_ID,",
+				"          CREATED_DATE = toString(currentDate(),'yyyy-MM-dd'),",
+				"          JOB = iif(trim(toString(JOB)) == '\\\\N', 'Unknown', toString(JOB)),",
+				"          CHARACTERS = iif(trim(toString(CHARACTERS)) == '\\\\N', 'Unknown', replace(replace(replace(toString(CHARACTERS), '[\"', ''), '\"]', ''), '\\\"', ''))) ~> Cleaning",
+				"Cleaning sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          ARREST_KEY as integer,",
+				"          ARREST_DATE_NEW as date,",
+				"          PD_CD as integer,",
+				"          PD_DESC as string,",
+				"          KY_CD as integer,",
+				"          OFNS_DESC as string,",
+				"          LAW_CODE as string,",
+				"          LAW_CAT_CD as string,",
+				"          ARREST_BORO as string,",
+				"          ARREST_PRECINCT as integer,",
+				"          JURISDICTION_CODE as integer,",
+				"          AGE_GROUP as string,",
+				"          PERP_SEX as string,",
+				"          PERP_RACE as string,",
+				"          X_COORD_CD as double,",
+				"          Y_COORD_CD as double,",
+				"          Latitude as float,",
+				"          Longitude as float,",
+				"          {New Georeferenced Column} as string",
+				"     ),",
+				"     format: 'parquet',",
+				"     partitionFileNames:['TitlePrincipals.parquet'],",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     partitionBy('hash', 1)) ~> TitlePrincipalsClean"
+			]
+		}
+	}
+}
