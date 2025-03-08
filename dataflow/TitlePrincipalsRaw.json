@@ -1,0 +1,71 @@
+{
+	"name": "TitlePrincipalsRaw",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "TitlePrincipalsRaw",
+						"type": "DatasetReference"
+					},
+					"name": "TitlePrincipalsRaw",
+					"description": "Exporting data to TitlePrincipalsRawStage"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "Snowflake_RawTitlePrincipals",
+						"type": "DatasetReference"
+					},
+					"name": "TitlePrincipalsRawStage",
+					"description": "Raw Stage with Audit Columns"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				}
+			],
+			"scriptLines": [
+				"parameters{",
+				"     Job_ID as string (\"10\")",
+				"}",
+				"source(output(",
+				"          tconst as string,",
+				"          ordering as short,",
+				"          nconst as string,",
+				"          category as string,",
+				"          job as string,",
+				"          characters as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> TitlePrincipalsRaw",
+				"TitlePrincipalsRaw derive(JOB_ID = $Job_ID,",
+				"          CREATED_DATE = toString(currentDate(),'yyyy-MM-dd')) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     stageInsert: true,",
+				"     mapColumn(",
+				"          TCONST = tconst,",
+				"          ORDERING = ordering,",
+				"          NCONST = nconst,",
+				"          CATEGORY = category,",
+				"          JOB = job,",
+				"          CHARACTERS = characters,",
+				"          JOB_ID,",
+				"          CREATED_DATE",
+				"     )) ~> TitlePrincipalsRawStage"
+			]
+		}
+	}
+}
