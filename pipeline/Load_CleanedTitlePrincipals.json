@@ -1,0 +1,184 @@
+{
+	"name": "Load_CleanedTitlePrincipals",
+	"properties": {
+		"activities": [
+			{
+				"name": "TitlePrincipalsParquet",
+				"description": "Cleaning and converting it to parquet",
+				"type": "ExecuteDataFlow",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Succeeded",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "TitlePrincipalsClean",
+						"type": "DataFlowReference",
+						"parameters": {
+							"JOB_ID": {
+								"value": "'@{pipeline().RunId}'",
+								"type": "Expression"
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "TitlePrincipalsStage",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "TitlePrincipalsParquet",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "ParquetSource",
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": true,
+							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "ParquetReadSettings"
+						}
+					},
+					"sink": {
+						"type": "SnowflakeV2Sink",
+						"importSettings": {
+							"type": "SnowflakeImportCopyCommand"
+						}
+					},
+					"enableStaging": true,
+					"stagingSettings": {
+						"linkedServiceName": {
+							"referenceName": "AzureBlobStorage1_mid",
+							"type": "LinkedServiceReference"
+						}
+					},
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"name": "TCONST",
+									"type": "String"
+								},
+								"sink": {
+									"name": "TCONST",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "ORDERING",
+									"type": "Decimal"
+								},
+								"sink": {
+									"name": "ORDERING",
+									"type": "Int64"
+								}
+							},
+							{
+								"source": {
+									"name": "NCONST",
+									"type": "String"
+								},
+								"sink": {
+									"name": "NCONST",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "CATEGORY",
+									"type": "String"
+								},
+								"sink": {
+									"name": "CATEGORY",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "JOB",
+									"type": "String"
+								},
+								"sink": {
+									"name": "JOB",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "CHARACTERS",
+									"type": "String"
+								},
+								"sink": {
+									"name": "CHARACTERS",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "JOB_ID",
+									"type": "String"
+								},
+								"sink": {
+									"name": "JOB_ID",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "CREATED_DATE",
+									"type": "String"
+								},
+								"sink": {
+									"name": "CREATED_DATE",
+									"type": "DateTime"
+								}
+							}
+						]
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "Parquet_TitlePrincipals",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "Snowflake_TitlePrincipals",
+						"type": "DatasetReference"
+					}
+				]
+			}
+		],
+		"annotations": []
+	}
+}

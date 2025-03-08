@@ -1,0 +1,16 @@
+{
+	"name": "Snowflake_TitlePrincipals",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "Snowflake1_mid",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "SnowflakeV2Table",
+		"schema": [],
+		"typeProperties": {
+			"schema": "DADABI_SCHEMA",
+			"table": "STAGE_TITLE_PRINCIPALS"
+		}
+	}
+}
