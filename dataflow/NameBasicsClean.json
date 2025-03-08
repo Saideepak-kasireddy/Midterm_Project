@@ -1,0 +1,75 @@
+{
+	"name": "NameBasicsClean",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "Snowflake_RawNameBasics",
+						"type": "DatasetReference"
+					},
+					"name": "NameBasicsClean"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "Parquet_NameBasics",
+						"type": "DatasetReference"
+					},
+					"name": "NameBasicsParquet"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				}
+			],
+			"scriptLines": [
+				"parameters{",
+				"     Job_ID as string (\"10\")",
+				"}",
+				"source(output(",
+				"          NCONST as string,",
+				"          PRIMARYNAME as string,",
+				"          BIRTHYEAR as string,",
+				"          DEATHYEAR as string,",
+				"          PRIMARYPROFESSION as string,",
+				"          KNOWNFORTITLES as string,",
+				"          JOB_ID as string,",
+				"          CREATED_DATE as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> NameBasicsClean",
+				"NameBasicsClean derive(BIRTHYEAR = iif(trim(toString(BIRTHYEAR)) == '\\\\N', 'Unknown', toString(BIRTHYEAR)),",
+				"          DEATHYEAR = iif(trim(toString(DEATHYEAR)) == '\\\\N', 'Unknown', toString(DEATHYEAR)),",
+				"          PRIMARYPROFESSION = iif(trim(toString(PRIMARYPROFESSION)) == '\\\\N', 'Unknown', toString(PRIMARYPROFESSION)),",
+				"          KNOWNFORTITLES = iif(trim(toString(KNOWNFORTITLES)) == '\\\\N', 'Unknown', toString(KNOWNFORTITLES)),",
+				"          JOB_ID = $Job_ID,",
+				"          CREATED_DATE = toString(currentDate(),'yyyy-MM-dd')) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'parquet',",
+				"     partitionFileNames:['NameBasics.parquet'],",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     mapColumn(",
+				"          NCONST,",
+				"          PRIMARYNAME,",
+				"          BIRTHYEAR,",
+				"          DEATHYEAR,",
+				"          PRIMARYPROFESSION,",
+				"          KNOWNFORTITLES,",
+				"          JOB_ID,",
+				"          CREATED_DATE",
+				"     ),",
+				"     partitionBy('hash', 1)) ~> NameBasicsParquet"
+			]
+		}
+	}
+}
