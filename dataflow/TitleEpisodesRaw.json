@@ -1,0 +1,65 @@
+{
+	"name": "TitleEpisodesRaw",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "TitleEpisodescsv",
+						"type": "DatasetReference"
+					},
+					"name": "TitleEpisodesRaw"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "Snowflake_RawTitleEpisodes",
+						"type": "DatasetReference"
+					},
+					"name": "TitleEpisodesRawStage"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				}
+			],
+			"scriptLines": [
+				"parameters{",
+				"     Job_ID as string (\"10\")",
+				"}",
+				"source(output(",
+				"          tconst as string,",
+				"          parentTconst as string,",
+				"          seasonNumber as string,",
+				"          episodeNumber as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> TitleEpisodesRaw",
+				"TitleEpisodesRaw derive(JOB_ID = $Job_ID,",
+				"          CREATED_DATE = toString(currentDate(),'yyyy-MM-dd')) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     stageInsert: true,",
+				"     mapColumn(",
+				"          TCONST = tconst,",
+				"          PARENTTCONST = parentTconst,",
+				"          SEASONNUMBER = seasonNumber,",
+				"          EPISODENUMBER = episodeNumber,",
+				"          JOB_ID,",
+				"          CREATED_DATE",
+				"     )) ~> TitleEpisodesRawStage"
+			]
+		}
+	}
+}
