@@ -1,0 +1,73 @@
+{
+	"name": "TitleAkasRaw",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "TitleAkascsv",
+						"type": "DatasetReference"
+					},
+					"name": "TitleAkasRaw"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "Snowflake_RawTitleAkas",
+						"type": "DatasetReference"
+					},
+					"name": "TitleAkasRawStage"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				}
+			],
+			"scriptLines": [
+				"parameters{",
+				"     Job_ID as string (\"10\")",
+				"}",
+				"source(output(",
+				"          titleId as string,",
+				"          ordering as short,",
+				"          title as string,",
+				"          region as string,",
+				"          language as string,",
+				"          types as string,",
+				"          attributes as string,",
+				"          isOriginalTitle as boolean",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> TitleAkasRaw",
+				"TitleAkasRaw derive(JOB_ID = $Job_ID,",
+				"          CREATED_DATE = toString(currentDate(),'yyyy-MM-dd')) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     stageInsert: true,",
+				"     mapColumn(",
+				"          TITLEID = titleId,",
+				"          ORDERING = ordering,",
+				"          TITLE = title,",
+				"          REGION = region,",
+				"          LANGUAGE = language,",
+				"          TYPES = types,",
+				"          ATTRIBUTES = attributes,",
+				"          ISORIGINALTITLE = isOriginalTitle,",
+				"          JOB_ID,",
+				"          CREATED_DATE",
+				"     )) ~> TitleAkasRawStage"
+			]
+		}
+	}
+}
