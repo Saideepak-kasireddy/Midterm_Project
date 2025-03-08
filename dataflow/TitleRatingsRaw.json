@@ -1,0 +1,63 @@
+{
+	"name": "TitleRatingsRaw",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "TitleRatingscsv",
+						"type": "DatasetReference"
+					},
+					"name": "TitleRatingsRaw"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "Snowflake_RawTitleRatings",
+						"type": "DatasetReference"
+					},
+					"name": "TitleRatingsRawstage"
+				}
+			],
+			"transformations": [
+				{
+					"name": "AuditColumns"
+				}
+			],
+			"scriptLines": [
+				"parameters{",
+				"     Job_ID as string (\"10\")",
+				"}",
+				"source(output(",
+				"          tconst as string,",
+				"          averageRating as double,",
+				"          numVotes as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> TitleRatingsRaw",
+				"TitleRatingsRaw derive(Job_ID = $Job_ID,",
+				"          Created_Date = toString(currentDate(),'yyyy-MM-dd')) ~> AuditColumns",
+				"AuditColumns sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     stageInsert: true,",
+				"     mapColumn(",
+				"          TCONST = tconst,",
+				"          AVERAGERATING = averageRating,",
+				"          NUMVOTES = numVotes,",
+				"          JOB_ID = Job_ID,",
+				"          CREATED_DATE = Created_Date",
+				"     )) ~> TitleRatingsRawstage"
+			]
+		}
+	}
+}
