@@ -1,5 +1,5 @@
 {
-	"name": "ParquetTitleRatings",
+	"name": "Parquet_TitleRatings",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "AzureDataLakeStorage_LS",
@@ -10,7 +10,7 @@
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobFSLocation",
-				"fileName": "TitleRatings.parquet",
+				"fileName": "TitleRating.parquet",
 				"fileSystem": "silver"
 			},
 			"compressionCodec": "snappy"

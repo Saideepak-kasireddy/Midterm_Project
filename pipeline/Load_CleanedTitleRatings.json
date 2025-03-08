@@ -1,9 +1,9 @@
 {
-	"name": "Load_TitleRatings",
+	"name": "Load_CleanedTitleRatings",
 	"properties": {
 		"activities": [
 			{
-				"name": "Load_TitleRatings",
+				"name": "TitleRatingsParquet",
 				"type": "ExecuteDataFlow",
 				"state": "Inactive",
 				"onInactiveMarkAs": "Succeeded",
@@ -18,7 +18,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"dataflow": {
-						"referenceName": "TitleRatingspar",
+						"referenceName": "TitleRatingsclean",
 						"type": "DataFlowReference",
 						"parameters": {
 							"Job_Id": {
@@ -35,19 +35,19 @@
 				}
 			},
 			{
-				"name": "TitlRatingsStage",
+				"name": "TitleRatingsStage",
 				"type": "Copy",
 				"dependsOn": [
 					{
-						"activity": "Load_TitleRatings",
+						"activity": "TitleRatingsParquet",
 						"dependencyConditions": [
 							"Succeeded"
 						]
 					}
 				],
 				"policy": {
-					"timeout": "0.12:00:00",
-					"retry": 0,
+					"timeout": "0.00:30:00",
+					"retry": 1,
 					"retryIntervalInSeconds": 30,
 					"secureOutput": false,
 					"secureInput": false
@@ -83,7 +83,7 @@
 						"mappings": [
 							{
 								"source": {
-									"name": "tconst",
+									"name": "TCONST",
 									"type": "String"
 								},
 								"sink": {
@@ -93,7 +93,7 @@
 							},
 							{
 								"source": {
-									"name": "averageRating",
+									"name": "AVERAGERATING",
 									"type": "Double"
 								},
 								"sink": {
@@ -103,8 +103,8 @@
 							},
 							{
 								"source": {
-									"name": "numVotes",
-									"type": "Int32"
+									"name": "NUMVOTES",
+									"type": "Decimal"
 								},
 								"sink": {
 									"name": "NUMVOTES",
@@ -113,7 +113,7 @@
 							},
 							{
 								"source": {
-									"name": "Job_ID",
+									"name": "JOB_ID",
 									"type": "String"
 								},
 								"sink": {
@@ -123,7 +123,7 @@
 							},
 							{
 								"source": {
-									"name": "Created_Date",
+									"name": "CREATED_DATE",
 									"type": "String"
 								},
 								"sink": {
@@ -136,13 +136,13 @@
 				},
 				"inputs": [
 					{
-						"referenceName": "ParquetTitleRatings",
+						"referenceName": "Parquet_TitleRatings",
 						"type": "DatasetReference"
 					}
 				],
 				"outputs": [
 					{
-						"referenceName": "Snowflake_TitleRatings",
+						"referenceName": "Snowflake_CleanTitleRatings",
 						"type": "DatasetReference"
 					}
 				]

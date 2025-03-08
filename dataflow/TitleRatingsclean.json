@@ -1,24 +1,24 @@
 {
-	"name": "TitleRatingspar",
+	"name": "TitleRatingsclean",
 	"properties": {
 		"type": "MappingDataFlow",
 		"typeProperties": {
 			"sources": [
 				{
 					"dataset": {
-						"referenceName": "TitleRatingscsv",
+						"referenceName": "Snowflake_RawTitleRatings",
 						"type": "DatasetReference"
 					},
-					"name": "TitleRatingscsv"
+					"name": "TitleRatingsclean"
 				}
 			],
 			"sinks": [
 				{
 					"dataset": {
-						"referenceName": "TitleRatingsParquet",
+						"referenceName": "TitleRatingParquetfile",
 						"type": "DatasetReference"
 					},
-					"name": "TitleRatingsparquet"
+					"name": "TitleRatingsParquet"
 				}
 			],
 			"transformations": [
@@ -31,32 +31,34 @@
 				"     Job_Id as string (\"10\")",
 				"}",
 				"source(output(",
-				"          tconst as string,",
-				"          averageRating as double,",
-				"          numVotes as integer",
+				"          TCONST as string,",
+				"          AVERAGERATING as double,",
+				"          NUMVOTES as decimal(38,0),",
+				"          JOB_ID as string,",
+				"          CREATED_DATE as date",
 				"     ),",
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
-				"     ignoreNoFilesFound: false) ~> TitleRatingscsv",
-				"TitleRatingscsv derive(Job_ID = $Job_Id,",
-				"          Created_Date = toString(currentDate(),'yyyy-MM-dd')) ~> derivedColumn1",
+				"     format: 'table') ~> TitleRatingsclean",
+				"TitleRatingsclean derive(JOB_ID = $Job_Id,",
+				"          CREATED_DATE = toString(currentDate(),'yyyy-MM-dd')) ~> derivedColumn1",
 				"derivedColumn1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     format: 'parquet',",
-				"     partitionFileNames:['TitleRatings.parquet'],",
+				"     partitionFileNames:['TitleRating.parquet'],",
 				"     umask: 0022,",
 				"     preCommands: [],",
 				"     postCommands: [],",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
 				"     mapColumn(",
-				"          tconst,",
-				"          averageRating,",
-				"          numVotes,",
-				"          Job_ID,",
-				"          Created_Date",
+				"          TCONST,",
+				"          AVERAGERATING,",
+				"          NUMVOTES,",
+				"          JOB_ID,",
+				"          CREATED_DATE",
 				"     ),",
-				"     partitionBy('hash', 1)) ~> TitleRatingsparquet"
+				"     partitionBy('hash', 1)) ~> TitleRatingsParquet"
 			]
 		}
 	}
