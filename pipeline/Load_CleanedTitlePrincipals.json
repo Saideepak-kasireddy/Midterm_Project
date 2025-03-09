@@ -6,10 +6,12 @@
 				"name": "TitlePrincipalsParquet",
 				"description": "Cleaning and converting it to parquet",
 				"type": "ExecuteDataFlow",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [],
 				"policy": {
-					"timeout": "0.12:00:00",
-					"retry": 0,
+					"timeout": "0.00:30:00",
+					"retry": 1,
 					"retryIntervalInSeconds": 30,
 					"secureOutput": false,
 					"secureInput": false
@@ -36,8 +38,6 @@
 			{
 				"name": "TitlePrincipalsStage",
 				"type": "Copy",
-				"state": "Inactive",
-				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [
 					{
 						"activity": "TitlePrincipalsParquet",
@@ -75,7 +75,7 @@
 					"enableStaging": true,
 					"stagingSettings": {
 						"linkedServiceName": {
-							"referenceName": "AzureBlobStorage1_mid",
+							"referenceName": "AzureBlobStorage",
 							"type": "LinkedServiceReference"
 						}
 					},
