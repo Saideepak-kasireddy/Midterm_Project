@@ -2,14 +2,14 @@
 	"name": "Snowflake_RawTitleEpisodes",
 	"properties": {
 		"linkedServiceName": {
-			"referenceName": "Snowflake1_mid",
+			"referenceName": "Snowflake_LS",
 			"type": "LinkedServiceReference"
 		},
 		"annotations": [],
 		"type": "SnowflakeV2Table",
 		"schema": [],
 		"typeProperties": {
-			"schema": "DADABI_SCHEMA",
+			"schema": "DAMG_SCHEMA",
 			"table": "RAWSTAGE_TITLE_EPISODE"
 		}
 	}

@@ -2,14 +2,14 @@
 	"name": "Snowflake_TitleBasics",
 	"properties": {
 		"linkedServiceName": {
-			"referenceName": "Snowflake_MidTerm",
+			"referenceName": "Snowflake_LS",
 			"type": "LinkedServiceReference"
 		},
 		"annotations": [],
 		"type": "SnowflakeV2Table",
 		"schema": [],
 		"typeProperties": {
-			"schema": "DATA_SCHEMA",
+			"schema": "DAMG_SCHEMA",
 			"table": "STAGE_TITLE_BASICS"
 		}
 	}

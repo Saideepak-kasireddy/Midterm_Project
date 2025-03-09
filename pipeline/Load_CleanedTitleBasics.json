@@ -1,5 +1,5 @@
 {
-	"name": "TitleBasicsStage",
+	"name": "Load_CleanedTitleBasics",
 	"properties": {
 		"activities": [
 			{
@@ -74,7 +74,7 @@
 					"enableStaging": true,
 					"stagingSettings": {
 						"linkedServiceName": {
-							"referenceName": "AzureBlobStorage_MidTerm",
+							"referenceName": "AzureBlobStorage",
 							"type": "LinkedServiceReference"
 						}
 					},

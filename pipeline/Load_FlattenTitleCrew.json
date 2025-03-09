@@ -1,5 +1,5 @@
 {
-	"name": "Load_TitleCrew",
+	"name": "Load_FlattenTitleCrew",
 	"properties": {
 		"activities": [
 			{
@@ -74,7 +74,7 @@
 					"enableStaging": true,
 					"stagingSettings": {
 						"linkedServiceName": {
-							"referenceName": "AzureBlobStorage_MidTerm",
+							"referenceName": "AzureBlobStorage",
 							"type": "LinkedServiceReference"
 						}
 					},
