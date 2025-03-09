@@ -2,7 +2,7 @@
 	"name": "Parquet_TitleCrews",
 	"properties": {
 		"linkedServiceName": {
-			"referenceName": "AzureDataLakeStorage_MidTerm",
+			"referenceName": "AzureDataLakeStorage_LS",
 			"type": "LinkedServiceReference"
 		},
 		"annotations": [],
