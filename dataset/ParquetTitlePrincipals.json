@@ -2,7 +2,7 @@
 	"name": "ParquetTitlePrincipals",
 	"properties": {
 		"linkedServiceName": {
-			"referenceName": "AzureDataLakeStorage1_mid",
+			"referenceName": "AzureDataLakeStorage_LS",
 			"type": "LinkedServiceReference"
 		},
 		"annotations": [],
