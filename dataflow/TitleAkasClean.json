@@ -1,0 +1,83 @@
+{
+	"name": "TitleAkasClean",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "Snowflake_RawTitleAkas",
+						"type": "DatasetReference"
+					},
+					"name": "TitleAkasClean"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ParquetTitleAkas",
+						"type": "DatasetReference"
+					},
+					"name": "TitleAkasParquet"
+				}
+			],
+			"transformations": [
+				{
+					"name": "CleaningData"
+				}
+			],
+			"scriptLines": [
+				"parameters{",
+				"     Job_ID as string (\"10\")",
+				"}",
+				"source(output(",
+				"          TITLEID as string,",
+				"          ORDERING as decimal(38,0),",
+				"          TITLE as string,",
+				"          REGION as string,",
+				"          LANGUAGE as string,",
+				"          TYPES as string,",
+				"          ATTRIBUTES as string,",
+				"          ISORIGINALTITLE as boolean,",
+				"          JOB_ID as string,",
+				"          CREATED_DATE as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> TitleAkasClean",
+				"TitleAkasClean derive(JOB_ID = $Job_ID,",
+				"          CREATED_DATE = toString(currentDate(),'yyyy-MM-dd'),",
+				"          TYPES = iif(trim(replace(toString(TYPES), '☐', '')) == '\\\\N', 'Unknown', trim(replace(toString(TYPES), '☐', '')))",
+				"",
+				",",
+				"          REGION = iif(trim(toString(REGION)) == '\\\\N', 'Unknown', toString(REGION))",
+				"",
+				",",
+				"          LANGUAGE = iif(trim(toString(LANGUAGE)) == '\\\\N', 'Unknown', toString(LANGUAGE)),",
+				"          ATTRIBUTES = iif(trim(toString(ATTRIBUTES)) == '\\\\N', 'Unknown', toString(ATTRIBUTES))) ~> CleaningData",
+				"CleaningData sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'parquet',",
+				"     partitionFileNames:['TitleAkas.parquet'],",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     mapColumn(",
+				"          TITLEID,",
+				"          ORDERING,",
+				"          TITLE,",
+				"          REGION,",
+				"          LANGUAGE,",
+				"          TYPES,",
+				"          ATTRIBUTES,",
+				"          ISORIGINALTITLE,",
+				"          JOB_ID,",
+				"          CREATED_DATE",
+				"     ),",
+				"     partitionBy('hash', 1)) ~> TitleAkasParquet"
+			]
+		}
+	}
+}

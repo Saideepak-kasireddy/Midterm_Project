@@ -1,0 +1,71 @@
+{
+	"name": "TitleEpisodeClean",
+	"properties": {
+		"description": "Cleaning the raw stage table for episodes",
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "Snowflake_RawTitleEpisodes",
+						"type": "DatasetReference"
+					},
+					"name": "RawTitleEpisodes"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ParquetTitleEpisode",
+						"type": "DatasetReference"
+					},
+					"name": "TitleEpisodesClean",
+					"description": "Cleaned Episodes"
+				}
+			],
+			"transformations": [
+				{
+					"name": "CleaningNulls"
+				}
+			],
+			"scriptLines": [
+				"parameters{",
+				"     JOB_ID as string (\"10\")",
+				"}",
+				"source(output(",
+				"          TCONST as string,",
+				"          PARENTTCONST as string,",
+				"          SEASONNUMBER as string,",
+				"          EPISODENUMBER as string,",
+				"          JOB_ID as string,",
+				"          CREATED_DATE as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> RawTitleEpisodes",
+				"RawTitleEpisodes derive(JOB_ID = $JOB_ID,",
+				"          CREATED_DATE = toString(currentDate(),'yyyy-MM-dd'),",
+				"          SEASONNUMBER = iif(trim(toString(SEASONNUMBER)) == '\\\\N', 'Unknown', toString(SEASONNUMBER)),",
+				"          EPISODENUMBER = iif(trim(toString(EPISODENUMBER)) == '\\\\N', 'Unknown', toString(EPISODENUMBER))) ~> CleaningNulls",
+				"CleaningNulls sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'parquet',",
+				"     partitionFileNames:['TitleEpisodes.parquet'],",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     mapColumn(",
+				"          TCONST,",
+				"          PARENTTCONST,",
+				"          SEASONNUMBER,",
+				"          EPISODENUMBER,",
+				"          JOB_ID,",
+				"          CREATED_DATE",
+				"     ),",
+				"     partitionBy('hash', 1)) ~> TitleEpisodesClean"
+			]
+		}
+	}
+}

@@ -1,0 +1,68 @@
+{
+	"name": "TitleCrewClean",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "Snowflake_RawTitleCrew",
+						"type": "DatasetReference"
+					},
+					"name": "TitleCrewClean"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "Parquet_TitleCrew",
+						"type": "DatasetReference"
+					},
+					"name": "TitleCrewParquet"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				}
+			],
+			"scriptLines": [
+				"parameters{",
+				"     Job_ID as string (\"10\")",
+				"}",
+				"source(output(",
+				"          TCONST as string,",
+				"          DIRECTORS as string,",
+				"          WRITERS as string,",
+				"          JOB_ID as string,",
+				"          CREATED_DATE as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> TitleCrewClean",
+				"TitleCrewClean derive(JOB_ID = $Job_ID,",
+				"          CREATED_DATE = toString(currentDate(),'yyyy-MM-dd'),",
+				"          DIRECTORS = iif(trim(toString(DIRECTORS)) == '\\\\N', 'Unknown', toString(DIRECTORS))\r",
+				",",
+				"          WRITERS = iif(trim(toString(WRITERS)) == '\\\\N', 'Unknown', toString(WRITERS))) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'parquet',",
+				"     partitionFileNames:['TitleCrew.parquet'],",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     mapColumn(",
+				"          TCONST,",
+				"          DIRECTORS,",
+				"          WRITERS,",
+				"          JOB_ID,",
+				"          CREATED_DATE",
+				"     ),",
+				"     partitionBy('hash', 1)) ~> TitleCrewParquet"
+			]
+		}
+	}
+}

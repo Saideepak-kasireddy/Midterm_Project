@@ -1,0 +1,20 @@
+{
+	"name": "ParquetTitleBasicsFlattened",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureDataLakeStorage_MidTerm",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Parquet",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": "TitleBasicsFlatten.parquet",
+				"fileSystem": "silver"
+			},
+			"compressionCodec": "snappy"
+		},
+		"schema": []
+	}
+}

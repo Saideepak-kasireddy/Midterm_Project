@@ -1,0 +1,19 @@
+{
+	"name": "Parquet_TitleCrew",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureDataLakeStorage_MidTerm",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Parquet",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileSystem": "silver"
+			},
+			"compressionCodec": "snappy"
+		},
+		"schema": []
+	}
+}

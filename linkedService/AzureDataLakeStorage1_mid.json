@@ -1,0 +1,10 @@
+{
+	"name": "AzureDataLakeStorage1_mid",
+	"properties": {
+		"annotations": [],
+		"type": "AzureBlobFS",
+		"typeProperties": {
+			"url": "https://damg7370spring2025vs.dfs.core.windows.net/"
+		}
+	}
+}
