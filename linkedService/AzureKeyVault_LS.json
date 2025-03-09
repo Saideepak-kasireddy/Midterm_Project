@@ -1,0 +1,10 @@
+{
+	"name": "AzureKeyVault_LS",
+	"properties": {
+		"annotations": [],
+		"type": "AzureKeyVault",
+		"typeProperties": {
+			"baseUrl": "https://damg7370deepak10.vault.azure.net/"
+		}
+	}
+}
