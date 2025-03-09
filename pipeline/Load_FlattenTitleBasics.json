@@ -1,0 +1,214 @@
+{
+	"name": "Load_FlattenTitleBasics",
+	"properties": {
+		"description": "Loading the flattened TitleBasics",
+		"activities": [
+			{
+				"name": "TitleBasicFlattened",
+				"type": "ExecuteDataFlow",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Succeeded",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "TitleBasicsFlatten",
+						"type": "DataFlowReference",
+						"parameters": {
+							"JOB_ID": {
+								"value": "'@{pipeline().RunId}'",
+								"type": "Expression"
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "TitleBasicFlattenedStage",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "TitleBasicFlattened",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "ParquetSource",
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": true,
+							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "ParquetReadSettings"
+						}
+					},
+					"sink": {
+						"type": "SnowflakeV2Sink",
+						"importSettings": {
+							"type": "SnowflakeImportCopyCommand"
+						}
+					},
+					"enableStaging": true,
+					"stagingSettings": {
+						"linkedServiceName": {
+							"referenceName": "AzureBlobStorage_MidTerm",
+							"type": "LinkedServiceReference"
+						}
+					},
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"name": "TCONST",
+									"type": "String"
+								},
+								"sink": {
+									"name": "TCONST",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "TITLETYPE",
+									"type": "String"
+								},
+								"sink": {
+									"name": "TITLETYPE",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "PRIMARYTITLE",
+									"type": "String"
+								},
+								"sink": {
+									"name": "PRIMARYTITLE",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "ORIGINALTITLE",
+									"type": "String"
+								},
+								"sink": {
+									"name": "ORIGINALTITLE",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "ISADULT",
+									"type": "Boolean"
+								},
+								"sink": {
+									"name": "ISADULT",
+									"type": "Boolean"
+								}
+							},
+							{
+								"source": {
+									"name": "STARTYEAR",
+									"type": "String"
+								},
+								"sink": {
+									"name": "STARTYEAR",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "ENDYEAR",
+									"type": "String"
+								},
+								"sink": {
+									"name": "ENDYEAR",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "RUNTIMEMINUTES",
+									"type": "String"
+								},
+								"sink": {
+									"name": "RUNTIMEMINUTES",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "GENRES",
+									"type": "String"
+								},
+								"sink": {
+									"name": "GENRES",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "JOB_ID",
+									"type": "String"
+								},
+								"sink": {
+									"name": "JOB_ID",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "CREATED_DATE",
+									"type": "String"
+								},
+								"sink": {
+									"name": "CREATED_DATE",
+									"type": "DateTime"
+								}
+							}
+						]
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "ParquetTitleBasicsFlattened",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "Snowflake_FlattenedTitleBasics",
+						"type": "DatasetReference"
+					}
+				]
+			}
+		],
+		"annotations": []
+	}
+}

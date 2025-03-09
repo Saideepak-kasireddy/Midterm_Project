@@ -1,0 +1,98 @@
+{
+	"name": "TitleBasicsFlatten",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "Snowflake_TitleBasics",
+						"type": "DatasetReference"
+					},
+					"name": "TitleBasicCleaned"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ParquetFlattenedTitleBasics",
+						"type": "DatasetReference"
+					},
+					"name": "TitleBasicFlattened",
+					"description": "Flattened File"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "flattening"
+				}
+			],
+			"scriptLines": [
+				"parameters{",
+				"     JOB_ID as string (\"10\")",
+				"}",
+				"source(output(",
+				"          TCONST as string,",
+				"          TITLETYPE as string,",
+				"          PRIMARYTITLE as string,",
+				"          ORIGINALTITLE as string,",
+				"          ISADULT as boolean,",
+				"          STARTYEAR as string,",
+				"          ENDYEAR as string,",
+				"          RUNTIMEMINUTES as string,",
+				"          GENRES as string,",
+				"          JOB_ID as string,",
+				"          CREATED_DATE as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> TitleBasicCleaned",
+				"TitleBasicCleaned derive(JOB_ID = $JOB_ID,",
+				"          CREATED_DATE = toString(currentDate(),'yyyy-MM-dd'),",
+				"          GENRES = split(GENRES, ',')) ~> derivedColumn1",
+				"derivedColumn1 foldDown(unroll(GENRES),",
+				"     mapColumn(",
+				"          TCONST,",
+				"          TITLETYPE,",
+				"          PRIMARYTITLE,",
+				"          ORIGINALTITLE,",
+				"          ISADULT,",
+				"          STARTYEAR,",
+				"          ENDYEAR,",
+				"          RUNTIMEMINUTES,",
+				"          GENRES,",
+				"          JOB_ID,",
+				"          CREATED_DATE",
+				"     ),",
+				"     skipDuplicateMapInputs: false,",
+				"     skipDuplicateMapOutputs: false) ~> flattening",
+				"flattening sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'parquet',",
+				"     partitionFileNames:['TitleBasicsFlatten.parquet'],",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     mapColumn(",
+				"          TCONST,",
+				"          TITLETYPE,",
+				"          PRIMARYTITLE,",
+				"          ORIGINALTITLE,",
+				"          ISADULT,",
+				"          STARTYEAR,",
+				"          ENDYEAR,",
+				"          RUNTIMEMINUTES,",
+				"          GENRES,",
+				"          JOB_ID,",
+				"          CREATED_DATE",
+				"     ),",
+				"     partitionBy('hash', 1)) ~> TitleBasicFlattened"
+			]
+		}
+	}
+}
