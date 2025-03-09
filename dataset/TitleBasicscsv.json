@@ -2,7 +2,7 @@
 	"name": "TitleBasicscsv",
 	"properties": {
 		"linkedServiceName": {
-			"referenceName": "AzureDataLakeStorage_LS",
+			"referenceName": "AzureDataLakeStorage_MidTerm",
 			"type": "LinkedServiceReference"
 		},
 		"annotations": [],
