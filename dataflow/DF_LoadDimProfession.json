@@ -1,0 +1,96 @@
+{
+	"name": "DF_LoadDimProfession",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "Snowflake_Normalized",
+						"type": "DatasetReference"
+					},
+					"name": "sourceNormalizedNameBasics"
+				},
+				{
+					"dataset": {
+						"referenceName": "Snowflake_DimProffesion",
+						"type": "DatasetReference"
+					},
+					"name": "NameBasicsMaxID"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "Snowflake_DimProffesion",
+						"type": "DatasetReference"
+					},
+					"name": "sinkDimProffesion"
+				}
+			],
+			"transformations": [
+				{
+					"name": "DimProfessionwithSK"
+				},
+				{
+					"name": "SurrogateKey"
+				},
+				{
+					"name": "DerivedColumn"
+				}
+			],
+			"scriptLines": [
+				"parameters{",
+				"     JOB_ID as string (\"10\")",
+				"}",
+				"source(output(",
+				"          NCONST as string,",
+				"          PRIMARYNAME as string,",
+				"          BIRTHYEAR as string,",
+				"          DEATHYEAR as string,",
+				"          PRIMARYPROFESSION as string,",
+				"          KNOWNFORTITLES as string,",
+				"          JOB_ID as string,",
+				"          CREATED_DATE as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> sourceNormalizedNameBasics",
+				"source(output(",
+				"          PRIMARYPROFESSION_SK as decimal(20,0)",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     query: '   SELECT NVL(MAX(PRIMARYPROFESSION_SK),0) AS PRIMARYPROFESSION_SK FROM DAMG_SCHEMA.DIM_PROFESSION',",
+				"     format: 'query') ~> NameBasicsMaxID",
+				"sourceNormalizedNameBasics, NameBasicsMaxID join(1==1,",
+				"     joinType:'cross',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> DimProfessionwithSK",
+				"DimProfessionwithSK keyGenerate(output(RowNum as long),",
+				"     startAt: 1L,",
+				"     stepValue: 1L) ~> SurrogateKey",
+				"SurrogateKey derive(JOB_ID = $JOB_ID,",
+				"          CREATED_DATE = currentTimestamp(),",
+				"          PRIMARYPROFESSION_SK = PRIMARYPROFESSION_SK+RowNum) ~> DerivedColumn",
+				"DerivedColumn sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     stageInsert: true,",
+				"     mapColumn(",
+				"          PRIMARYPROFESSION,",
+				"          JOB_ID,",
+				"          CREATED_DATE,",
+				"          PRIMARYPROFESSION_SK",
+				"     )) ~> sinkDimProffesion"
+			]
+		}
+	}
+}
