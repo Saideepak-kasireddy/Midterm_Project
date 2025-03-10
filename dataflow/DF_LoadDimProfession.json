@@ -6,7 +6,7 @@
 			"sources": [
 				{
 					"dataset": {
-						"referenceName": "Snowflake_Normalized",
+						"referenceName": "Snowflake_NormalizedNameBasics",
 						"type": "DatasetReference"
 					},
 					"name": "sourceNormalizedNameBasics"
@@ -44,12 +44,18 @@
 				"     JOB_ID as string (\"10\")",
 				"}",
 				"source(output(",
-				"          PRIMARYPROFESSION as string",
+				"          NCONST as string,",
+				"          PRIMARYNAME as string,",
+				"          BIRTHYEAR as string,",
+				"          DEATHYEAR as string,",
+				"          PRIMARYPROFESSION as string,",
+				"          KNOWNFORTITLES as string,",
+				"          JOB_ID as string,",
+				"          CREATED_DATE as date",
 				"     ),",
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
-				"     query: 'SELECT DISTINCT(PRIMARYPROFESSION)\\nFROM NORMALIZEDSTAGE_NAME_BASICS',",
-				"     format: 'query') ~> sourceNormalizedNameBasics",
+				"     format: 'table') ~> sourceNormalizedNameBasics",
 				"source(output(",
 				"          PRIMARYPROFESSION_SK as decimal(20,0)",
 				"     ),",

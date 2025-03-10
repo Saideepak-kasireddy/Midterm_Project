@@ -172,7 +172,7 @@
 				],
 				"outputs": [
 					{
-						"referenceName": "Snowflake_Normalized",
+						"referenceName": "Snowflake_NormalizedNameBasics",
 						"type": "DatasetReference"
 					}
 				]

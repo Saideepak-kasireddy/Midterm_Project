@@ -9,7 +9,7 @@
 						"referenceName": "Snowflake_FlattenedTitleBasics",
 						"type": "DatasetReference"
 					},
-					"name": "TitleBasic"
+					"name": "SourceFlattenedTitleBasics"
 				},
 				{
 					"dataset": {
@@ -26,10 +26,21 @@
 					"name": "DimGenre"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "Snowflake_BrdTitleGenre",
+						"type": "DatasetReference"
+					},
+					"name": "SinkBrdTitleGenre"
+				}
+			],
 			"transformations": [
 				{
-					"name": "joinGenre"
+					"name": "joinwithDimTitle"
+				},
+				{
+					"name": "joinwithDimGenres"
 				}
 			],
 			"scriptLines": [
@@ -48,7 +59,7 @@
 				"     ),",
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
-				"     format: 'table') ~> TitleBasic",
+				"     format: 'table') ~> SourceFlattenedTitleBasics",
 				"source(output(",
 				"          TITLE_SK as decimal(20,0),",
 				"          TCONST as string,",
@@ -72,11 +83,30 @@
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     format: 'table') ~> DimGenre",
-				"TitleBasic, DimGenre join(GENRES == GENRE,",
+				"SourceFlattenedTitleBasics, DimTitle join(SourceFlattenedTitleBasics@TCONST == DimTitle@TCONST,",
 				"     joinType:'inner',",
 				"     matchType:'exact',",
 				"     ignoreSpaces: false,",
-				"     broadcast: 'auto')~> joinGenre"
+				"     broadcast: 'auto')~> joinwithDimTitle",
+				"joinwithDimTitle, DimGenre join(GENRES == GENRE,",
+				"     joinType:'inner',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> joinwithDimGenres",
+				"joinwithDimGenres sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     stageInsert: true,",
+				"     mapColumn(",
+				"          TITLE_SK,",
+				"          GENRE_SK",
+				"     )) ~> SinkBrdTitleGenre"
 			]
 		}
 	}

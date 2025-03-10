@@ -1,5 +1,5 @@
 {
-	"name": "Snowflake_Normalized",
+	"name": "Snowflake_NormalizedNameBasics",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "Snowflake_LS",

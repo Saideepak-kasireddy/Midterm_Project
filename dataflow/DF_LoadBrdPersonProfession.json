@@ -6,7 +6,7 @@
 			"sources": [
 				{
 					"dataset": {
-						"referenceName": "Snowflake_Normalized",
+						"referenceName": "Snowflake_NormalizedNameBasics",
 						"type": "DatasetReference"
 					},
 					"name": "StgNameBasics"
