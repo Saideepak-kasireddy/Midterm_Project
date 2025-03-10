@@ -1,0 +1,29 @@
+{
+	"name": "SnowflakebrdtitleLang",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "Snowflake_LS",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "SnowflakeV2Table",
+		"schema": [
+			{
+				"name": "TITLE_SK",
+				"type": "NUMBER",
+				"precision": 20,
+				"scale": 0
+			},
+			{
+				"name": "LANGUAGE_SK",
+				"type": "NUMBER",
+				"precision": 20,
+				"scale": 0
+			}
+		],
+		"typeProperties": {
+			"schema": "DAMG_SCHEMA",
+			"table": "BRD_TITLE_LANGUAGE"
+		}
+	}
+}
