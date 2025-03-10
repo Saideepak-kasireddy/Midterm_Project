@@ -1,0 +1,16 @@
+{
+	"name": "Snowflake_BrdTitleGenre",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "Snowflake_LS",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "SnowflakeV2Table",
+		"schema": [],
+		"typeProperties": {
+			"schema": "DAMG_SCHEMA",
+			"table": "BRD_TITLE_GENRE"
+		}
+	}
+}
