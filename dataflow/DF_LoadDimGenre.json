@@ -92,8 +92,7 @@
 				"          GENRE = GENRES,",
 				"          JOB_ID,",
 				"          CREATED_DATE,",
-				"          GENRE_SK,",
-				"          TCONST",
+				"          GENRE_SK",
 				"     )) ~> sinkDimGenre"
 			]
 		}
