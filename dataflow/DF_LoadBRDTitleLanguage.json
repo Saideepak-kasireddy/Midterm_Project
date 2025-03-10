@@ -6,10 +6,10 @@
 			"sources": [
 				{
 					"dataset": {
-						"referenceName": "Snowflake_TitleAkas",
+						"referenceName": "Snowflake_DimLanguage",
 						"type": "DatasetReference"
 					},
-					"name": "StageTitleAkas"
+					"name": "DimLanguage"
 				},
 				{
 					"dataset": {
@@ -20,13 +20,21 @@
 				},
 				{
 					"dataset": {
-						"referenceName": "Snowflake_DimLanguage",
+						"referenceName": "Snowflake_TitleAkas",
 						"type": "DatasetReference"
 					},
-					"name": "DimLanguage"
+					"name": "StageTitleAkas"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "SnowflakeBRDTitleLanguage",
+						"type": "DatasetReference"
+					},
+					"name": "BrdTitleLanguage"
+				}
+			],
 			"transformations": [
 				{
 					"name": "joiningTconsts"
@@ -46,20 +54,14 @@
 			],
 			"scriptLines": [
 				"source(output(",
-				"          TITLEID as string,",
-				"          ORDERING as decimal(38,0),",
-				"          TITLE as string,",
-				"          REGION as string,",
-				"          LANGUAGE as string,",
-				"          TYPES as string,",
-				"          ATTRIBUTES as string,",
-				"          ISORIGINALTITLE as boolean,",
+				"          LANGUAGE_SK as decimal(20,0),",
+				"          LANGUAGE_CODE as string,",
 				"          JOB_ID as string,",
 				"          CREATED_DATE as date",
 				"     ),",
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
-				"     format: 'table') ~> StageTitleAkas",
+				"     format: 'table') ~> DimLanguage",
 				"source(output(",
 				"          TITLE_SK as decimal(20,0),",
 				"          TCONST as string,",
@@ -75,15 +77,21 @@
 				"     validateSchema: false,",
 				"     format: 'table') ~> DimTitle",
 				"source(output(",
-				"          LANGUAGE_SK as decimal(20,0),",
-				"          LANGUAGE_CODE as string,",
+				"          TITLEID as string,",
+				"          ORDERING as decimal(38,0),",
+				"          TITLE as string,",
+				"          REGION as string,",
+				"          LANGUAGE as string,",
+				"          TYPES as string,",
+				"          ATTRIBUTES as string,",
+				"          ISORIGINALTITLE as boolean,",
 				"          JOB_ID as string,",
 				"          CREATED_DATE as date",
 				"     ),",
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
-				"     format: 'table') ~> DimLanguage",
-				"StageTitleAkas, DimTitle join(TITLEID == TCONST,",
+				"     format: 'table') ~> StageTitleAkas",
+				"DimTitle, StageTitleAkas join(TCONST == TITLEID,",
 				"     joinType:'inner',",
 				"     matchType:'exact',",
 				"     ignoreSpaces: false,",
@@ -93,7 +101,7 @@
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> SelectingTitleSK",
-				"DimLanguage, StageTitleAkas join(LANGUAGE_CODE == LANGUAGE,",
+				"DimLanguage, DimTitle join(LANGUAGE_CODE == LANGUAGE,",
 				"     joinType:'inner',",
 				"     matchType:'exact',",
 				"     ignoreSpaces: false,",
@@ -107,7 +115,17 @@
 				"     joinType:'outer',",
 				"     matchType:'exact',",
 				"     ignoreSpaces: false,",
-				"     broadcast: 'auto')~> JoiningSKs"
+				"     broadcast: 'auto')~> JoiningSKs",
+				"JoiningSKs sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     stageInsert: true) ~> BrdTitleLanguage"
 			]
 		}
 	}
