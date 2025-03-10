@@ -78,7 +78,7 @@
 				"          LANGUAGE as string,",
 				"          TYPES as string,",
 				"          ATTRIBUTES as string,",
-				"          ISORIGINALTITLE as boolean,",
+				"          ISORIGINALTITLE as string,",
 				"          JOB_ID as string,",
 				"          CREATED_DATE as date",
 				"     ),",
