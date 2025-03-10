@@ -101,7 +101,7 @@
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> SelectingTitleSK",
-				"DimLanguage, DimTitle join(LANGUAGE_CODE == LANGUAGE,",
+				"DimLanguage, StageTitleAkas join(LANGUAGE_CODE == LANGUAGE,",
 				"     joinType:'inner',",
 				"     matchType:'exact',",
 				"     ignoreSpaces: false,",

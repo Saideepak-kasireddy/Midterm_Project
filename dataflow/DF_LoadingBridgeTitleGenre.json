@@ -1,0 +1,83 @@
+{
+	"name": "DF_LoadingBridgeTitleGenre",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "Snowflake_FlattenedTitleBasics",
+						"type": "DatasetReference"
+					},
+					"name": "TitleBasic"
+				},
+				{
+					"dataset": {
+						"referenceName": "Snowflake_DimTitle",
+						"type": "DatasetReference"
+					},
+					"name": "DimTitle"
+				},
+				{
+					"dataset": {
+						"referenceName": "SnowflakeDimGenre",
+						"type": "DatasetReference"
+					},
+					"name": "DimGenre"
+				}
+			],
+			"sinks": [],
+			"transformations": [
+				{
+					"name": "joinGenre"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          TCONST as string,",
+				"          TITLETYPE as string,",
+				"          PRIMARYTITLE as string,",
+				"          ORIGINALTITLE as string,",
+				"          ISADULT as boolean,",
+				"          STARTYEAR as string,",
+				"          ENDYEAR as string,",
+				"          RUNTIMEMINUTES as string,",
+				"          GENRES as string,",
+				"          JOB_ID as string,",
+				"          CREATED_DATE as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> TitleBasic",
+				"source(output(",
+				"          TITLE_SK as decimal(20,0),",
+				"          TCONST as string,",
+				"          ORIGINAL_TITLE as string,",
+				"          PRIMARY_TITLE as string,",
+				"          IS_ADULT as string,",
+				"          START_YEAR as string,",
+				"          END_YEAR as string,",
+				"          JOB_ID as string,",
+				"          CREATED_DATE as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> DimTitle",
+				"source(output(",
+				"          GENRE_SK as decimal(20,0),",
+				"          GENRE as string,",
+				"          JOB_ID as string,",
+				"          CREATED_DATE as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> DimGenre",
+				"TitleBasic, DimGenre join(GENRES == GENRE,",
+				"     joinType:'inner',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> joinGenre"
+			]
+		}
+	}
+}
