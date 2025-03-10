@@ -6,7 +6,7 @@
 			"sources": [
 				{
 					"dataset": {
-						"referenceName": "Snowflake_TitleBasics",
+						"referenceName": "SnowflakeTitleBasicNULLCleaned",
 						"type": "DatasetReference"
 					},
 					"name": "TitleBasicCleaned"
@@ -15,7 +15,7 @@
 			"sinks": [
 				{
 					"dataset": {
-						"referenceName": "ParquetFlattenedTitleBasics",
+						"referenceName": "ParquetTitleBasicFlattenedandCleaned",
 						"type": "DatasetReference"
 					},
 					"name": "TitleBasicFlattened",
@@ -39,7 +39,7 @@
 				"          TITLETYPE as string,",
 				"          PRIMARYTITLE as string,",
 				"          ORIGINALTITLE as string,",
-				"          ISADULT as boolean,",
+				"          ISADULT as string,",
 				"          STARTYEAR as string,",
 				"          ENDYEAR as string,",
 				"          RUNTIMEMINUTES as string,",
@@ -72,7 +72,7 @@
 				"flattening sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     format: 'parquet',",
-				"     partitionFileNames:['TitleBasicsFlatten.parquet'],",
+				"     partitionFileNames:['TitleBasicsFlattenedandCleaned.parquet'],",
 				"     umask: 0022,",
 				"     preCommands: [],",
 				"     postCommands: [],",
