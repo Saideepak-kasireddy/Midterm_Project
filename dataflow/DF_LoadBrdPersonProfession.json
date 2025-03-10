@@ -6,10 +6,10 @@
 			"sources": [
 				{
 					"dataset": {
-						"referenceName": "Snowflake_Dim_Personnel",
+						"referenceName": "Snowflake_Normalized",
 						"type": "DatasetReference"
 					},
-					"name": "SourceBrdDimPerson"
+					"name": "StgNameBasics"
 				},
 				{
 					"dataset": {
@@ -17,6 +17,13 @@
 						"type": "DatasetReference"
 					},
 					"name": "SourceBrdDimProfession"
+				},
+				{
+					"dataset": {
+						"referenceName": "Snowflake_Dim_Personnel",
+						"type": "DatasetReference"
+					},
+					"name": "sourceDimPersonnel"
 				}
 			],
 			"sinks": [
@@ -25,18 +32,44 @@
 						"referenceName": "Snowflake_BrdPersonProfession",
 						"type": "DatasetReference"
 					},
-					"name": "sinkBridgePersonProfession"
+					"name": "sink1"
 				}
 			],
 			"transformations": [
 				{
-					"name": "join1"
+					"name": "lookup1"
+				},
+				{
+					"name": "lookup2"
 				}
 			],
 			"scriptLines": [
 				"parameters{",
 				"     Job_id as string (\"10\")",
 				"}",
+				"source(output(",
+				"          NCONST as string,",
+				"          PRIMARYNAME as string,",
+				"          BIRTHYEAR as string,",
+				"          DEATHYEAR as string,",
+				"          PRIMARYPROFESSION as string,",
+				"          KNOWNFORTITLES as string,",
+				"          JOB_ID as string,",
+				"          CREATED_DATE as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> StgNameBasics",
+				"source(output(",
+				"          PRIMARYPROFESSION_SK as decimal(20,0),",
+				"          NCONST as string,",
+				"          PRIMARYPROFESSION as string,",
+				"          JOB_ID as string,",
+				"          CREATED_DATE as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> SourceBrdDimProfession",
 				"source(output(",
 				"          PERSONNEL_SK as decimal(20,0),",
 				"          NCONST as string,",
@@ -48,23 +81,16 @@
 				"     ),",
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
-				"     format: 'table') ~> SourceBrdDimPerson",
-				"source(output(",
-				"          PRIMARYPROFESSION_SK as decimal(20,0),",
-				"          NCONST as string,",
-				"          PRIMARYPROFESSION as string,",
-				"          JOB_ID as string,",
-				"          CREATED_DATE as date",
-				"     ),",
-				"     allowSchemaDrift: true,",
-				"     validateSchema: false,",
-				"     format: 'table') ~> SourceBrdDimProfession",
-				"SourceBrdDimPerson, SourceBrdDimProfession join(SourceBrdDimPerson@NCONST == SourceBrdDimProfession@NCONST,",
-				"     joinType:'inner',",
-				"     matchType:'exact',",
-				"     ignoreSpaces: false,",
-				"     broadcast: 'auto')~> join1",
-				"join1 sink(allowSchemaDrift: true,",
+				"     format: 'table') ~> sourceDimPersonnel",
+				"StgNameBasics, sourceDimPersonnel lookup(StgNameBasics@NCONST == sourceDimPersonnel@NCONST,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> lookup1",
+				"lookup1, SourceBrdDimProfession lookup(StgNameBasics@PRIMARYPROFESSION == SourceBrdDimProfession@PRIMARYPROFESSION,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> lookup2",
+				"lookup2 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     deletable:false,",
 				"     insertable:true,",
@@ -75,9 +101,9 @@
 				"     skipDuplicateMapOutputs: true,",
 				"     stageInsert: true,",
 				"     mapColumn(",
-				"          PERSONNEL_SK,",
-				"          PRIMARYPROFESSION_SK",
-				"     )) ~> sinkBridgePersonProfession"
+				"          PRIMARYPROFESSION_SK,",
+				"          PERSONNEL_SK",
+				"     )) ~> sink1"
 			]
 		}
 	}
