@@ -90,8 +90,7 @@
 				"          LANGUAGE_CODE = LANGUAGE,",
 				"          JOB_ID,",
 				"          CREATED_DATE,",
-				"          LANGUAGE_SK,",
-				"          TCONST = TITLEID",
+				"          LANGUAGE_SK",
 				"     )) ~> sinkDimLanguage"
 			]
 		}
