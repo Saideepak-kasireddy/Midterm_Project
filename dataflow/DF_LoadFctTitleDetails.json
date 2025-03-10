@@ -1,0 +1,140 @@
+{
+	"name": "DF_LoadFctTitleDetails",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "Snowflake_FlattenedTitleBasics",
+						"type": "DatasetReference"
+					},
+					"name": "sourceFlattenTitleBasics"
+				},
+				{
+					"dataset": {
+						"referenceName": "Snowflake_TitleRatings",
+						"type": "DatasetReference"
+					},
+					"name": "sourceStgTitleRatings"
+				},
+				{
+					"dataset": {
+						"referenceName": "Snowflake_DimTitle",
+						"type": "DatasetReference"
+					},
+					"name": "sourceDimTitle"
+				},
+				{
+					"dataset": {
+						"referenceName": "Snowflake_DimRegion",
+						"type": "DatasetReference"
+					},
+					"name": "sourceDimRegion"
+				},
+				{
+					"dataset": {
+						"referenceName": "Snowflake_DimType",
+						"type": "DatasetReference"
+					},
+					"name": "sourceDimType"
+				}
+			],
+			"sinks": [],
+			"transformations": [
+				{
+					"name": "Measures"
+				},
+				{
+					"name": "joinDimTitle"
+				},
+				{
+					"name": "DimRegion"
+				},
+				{
+					"name": "DimType"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          TCONST as string,",
+				"          TITLETYPE as string,",
+				"          PRIMARYTITLE as string,",
+				"          ORIGINALTITLE as string,",
+				"          ISADULT as boolean,",
+				"          STARTYEAR as string,",
+				"          ENDYEAR as string,",
+				"          RUNTIMEMINUTES as string,",
+				"          GENRES as string,",
+				"          JOB_ID as string,",
+				"          CREATED_DATE as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> sourceFlattenTitleBasics",
+				"source(output(",
+				"          TCONST as string,",
+				"          AVERAGERATING as double,",
+				"          NUMVOTES as decimal(38,0),",
+				"          JOB_ID as string,",
+				"          CREATED_DATE as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> sourceStgTitleRatings",
+				"source(output(",
+				"          TITLE_SK as decimal(20,0),",
+				"          TCONST as string,",
+				"          ORIGINAL_TITLE as string,",
+				"          PRIMARY_TITLE as string,",
+				"          IS_ADULT as string,",
+				"          START_YEAR as string,",
+				"          END_YEAR as string,",
+				"          JOB_ID as string,",
+				"          CREATED_DATE as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> sourceDimTitle",
+				"source(output(",
+				"          REGION_SK as decimal(20,0),",
+				"          REGION as string,",
+				"          JOB_ID as string,",
+				"          CREATED_DATE as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> sourceDimRegion",
+				"source(output(",
+				"          TYPE_SK as decimal(20,0),",
+				"          TITLE_TYPE as string,",
+				"          JOB_ID as string,",
+				"          CREATED_DATE as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> sourceDimType",
+				"sourceFlattenTitleBasics, sourceStgTitleRatings join(sourceFlattenTitleBasics@TCONST == sourceStgTitleRatings@TCONST,",
+				"     joinType:'inner',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> Measures",
+				"Measures, sourceDimTitle join(ERROR_FUNCTION('') == ERROR_FUNCTION(''),",
+				"     joinType:'inner',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> joinDimTitle",
+				"joinDimTitle join(ERROR_FUNCTION('') == ERROR_FUNCTION(''),",
+				"     joinType:'inner',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> DimRegion",
+				"DimRegion join(ERROR_FUNCTION('') == ERROR_FUNCTION(''),",
+				"     joinType:'inner',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> DimType"
+			]
+		}
+	}
+}

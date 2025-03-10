@@ -88,8 +88,7 @@
 				"          PRIMARYPROFESSION,",
 				"          JOB_ID,",
 				"          CREATED_DATE,",
-				"          PRIMARYPROFESSION_SK,",
-				"          NCONST",
+				"          PRIMARYPROFESSION_SK",
 				"     )) ~> sinkDimProffesion"
 			]
 		}
