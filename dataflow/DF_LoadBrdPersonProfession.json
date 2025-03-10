@@ -1,0 +1,84 @@
+{
+	"name": "DF_LoadBrdPersonProfession",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "Snowflake_Dim_Personnel",
+						"type": "DatasetReference"
+					},
+					"name": "SourceBrdDimPerson"
+				},
+				{
+					"dataset": {
+						"referenceName": "Snowflake_DimProffesion",
+						"type": "DatasetReference"
+					},
+					"name": "SourceBrdDimProfession"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "Snowflake_BrdPersonProfession",
+						"type": "DatasetReference"
+					},
+					"name": "sinkBridgePersonProfession"
+				}
+			],
+			"transformations": [
+				{
+					"name": "join1"
+				}
+			],
+			"scriptLines": [
+				"parameters{",
+				"     Job_id as string (\"10\")",
+				"}",
+				"source(output(",
+				"          PERSONNEL_SK as decimal(20,0),",
+				"          NCONST as string,",
+				"          PRIMARY_NAME as string,",
+				"          BIRTH_YEAR as string,",
+				"          DEATH_YEAR as string,",
+				"          JOB_ID as string,",
+				"          CREATED_DATE as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> SourceBrdDimPerson",
+				"source(output(",
+				"          PRIMARYPROFESSION_SK as decimal(20,0),",
+				"          NCONST as string,",
+				"          PRIMARYPROFESSION as string,",
+				"          JOB_ID as string,",
+				"          CREATED_DATE as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> SourceBrdDimProfession",
+				"SourceBrdDimPerson, SourceBrdDimProfession join(SourceBrdDimPerson@NCONST == SourceBrdDimProfession@NCONST,",
+				"     joinType:'inner',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join1",
+				"join1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     stageInsert: true,",
+				"     mapColumn(",
+				"          PERSONNEL_SK,",
+				"          PRIMARYPROFESSION_SK",
+				"     )) ~> sinkBridgePersonProfession"
+			]
+		}
+	}
+}
