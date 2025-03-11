@@ -3,7 +3,7 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "Data flow1",
+				"name": "Load_FactTitleDetails",
 				"type": "ExecuteDataFlow",
 				"dependsOn": [],
 				"policy": {
@@ -19,7 +19,10 @@
 						"referenceName": "DF_LoadFctTitleDetails",
 						"type": "DataFlowReference",
 						"parameters": {
-							"JOB_ID": "\"10\""
+							"JOB_ID": {
+								"value": "'@{pipeline().RunId}'",
+								"type": "Expression"
+							}
 						}
 					},
 					"compute": {
