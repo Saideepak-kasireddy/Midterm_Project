@@ -38,24 +38,82 @@
 						"type": "DatasetReference"
 					},
 					"name": "sourceDimType"
+				},
+				{
+					"dataset": {
+						"referenceName": "Snowflake_TitleAkas",
+						"type": "DatasetReference"
+					},
+					"name": "SourceStgTitleAkas"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "Snowflake_DummyFact",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				},
+				{
+					"dataset": {
+						"referenceName": "Snowflake_DummyFact",
+						"type": "DatasetReference"
+					},
+					"name": "sink2"
+				}
+			],
 			"transformations": [
 				{
 					"name": "Measures"
-				},
-				{
-					"name": "joinDimTitle"
 				},
 				{
 					"name": "DimRegion"
 				},
 				{
 					"name": "DimType"
+				},
+				{
+					"name": "selectTitleAkas"
+				},
+				{
+					"name": "selectDimType"
+				},
+				{
+					"name": "selectDimRegion"
+				},
+				{
+					"name": "selectDimTitle"
+				},
+				{
+					"name": "selectStgTitleRatings"
+				},
+				{
+					"name": "joinedAllStages"
+				},
+				{
+					"name": "select1"
+				},
+				{
+					"name": "join2"
+				},
+				{
+					"name": "join3"
+				},
+				{
+					"name": "select2"
+				},
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "surrogateKey1"
 				}
 			],
 			"scriptLines": [
+				"parameters{",
+				"     JOB_ID as string (\"10\")",
+				"}",
 				"source(output(",
 				"          TCONST as string,",
 				"          TITLETYPE as string,",
@@ -114,26 +172,134 @@
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     format: 'table') ~> sourceDimType",
-				"sourceFlattenTitleBasics, sourceStgTitleRatings join(sourceFlattenTitleBasics@TCONST == sourceStgTitleRatings@TCONST,",
+				"source(output(",
+				"          TITLEID as string,",
+				"          ORDERING as decimal(38,0),",
+				"          TITLE as string,",
+				"          REGION as string,",
+				"          LANGUAGE as string,",
+				"          TYPES as string,",
+				"          ATTRIBUTES as string,",
+				"          ISORIGINALTITLE as string,",
+				"          JOB_ID as string,",
+				"          CREATED_DATE as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> SourceStgTitleAkas",
+				"sourceFlattenTitleBasics, selectTitleAkas join(TCONST == TITLEID,",
 				"     joinType:'inner',",
 				"     matchType:'exact',",
 				"     ignoreSpaces: false,",
 				"     broadcast: 'auto')~> Measures",
-				"Measures, sourceDimTitle join(ERROR_FUNCTION('') == ERROR_FUNCTION(''),",
-				"     joinType:'inner',",
-				"     matchType:'exact',",
-				"     ignoreSpaces: false,",
-				"     broadcast: 'auto')~> joinDimTitle",
-				"joinDimTitle join(ERROR_FUNCTION('') == ERROR_FUNCTION(''),",
+				"sourceFlattenTitleBasics join(ERROR_FUNCTION('') == ERROR_FUNCTION(''),",
 				"     joinType:'inner',",
 				"     matchType:'exact',",
 				"     ignoreSpaces: false,",
 				"     broadcast: 'auto')~> DimRegion",
-				"DimRegion join(ERROR_FUNCTION('') == ERROR_FUNCTION(''),",
+				"DimRegion join(TITLEID == ERROR_FUNCTION(''),",
 				"     joinType:'inner',",
 				"     matchType:'exact',",
 				"     ignoreSpaces: false,",
-				"     broadcast: 'auto')~> DimType"
+				"     broadcast: 'auto')~> DimType",
+				"SourceStgTitleAkas select(mapColumn(",
+				"          TITLEID,",
+				"          TITLE,",
+				"          REGION",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> selectTitleAkas",
+				"sourceDimType select(mapColumn(",
+				"          TYPE_SK,",
+				"          TITLE_TYPE",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> selectDimType",
+				"sourceDimRegion select(mapColumn(",
+				"          REGION_SK,",
+				"          REGION",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> selectDimRegion",
+				"sourceDimTitle select(mapColumn(",
+				"          TITLE_SK,",
+				"          TCONST,",
+				"          ORIGINAL_TITLE,",
+				"          PRIMARY_TITLE",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> selectDimTitle",
+				"sourceStgTitleRatings select(mapColumn(",
+				"          TCONST,",
+				"          AVERAGERATING,",
+				"          NUMVOTES",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> selectStgTitleRatings",
+				"Measures, selectStgTitleRatings join(sourceFlattenTitleBasics@TCONST == selectStgTitleRatings@TCONST,",
+				"     joinType:'inner',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> joinedAllStages",
+				"joinedAllStages select(mapColumn(",
+				"          TCONST = sourceFlattenTitleBasics@TCONST,",
+				"          TITLETYPE,",
+				"          PRIMARYTITLE,",
+				"          ORIGINALTITLE,",
+				"          RUNTIMEMINUTES,",
+				"          TITLEID,",
+				"          TITLE,",
+				"          REGION,",
+				"          TCONST = selectStgTitleRatings@TCONST,",
+				"          AVERAGERATING,",
+				"          NUMVOTES",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"select1, selectDimTitle join(select1@TCONST == selectDimTitle@TCONST,",
+				"     joinType:'inner',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join2",
+				"join2, selectDimRegion join(select1@REGION == selectDimRegion@REGION,",
+				"     joinType:'inner',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join3",
+				"join3 select(mapColumn(",
+				"          RUNTIMEMINUTES,",
+				"          AVERAGERATING,",
+				"          NUMVOTES,",
+				"          TITLE_SK,",
+				"          REGION_SK",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select2",
+				"surrogateKey1 derive(JOB_ID = $JOB_ID,",
+				"          CREATED_DATE = currentTimestamp()) ~> derivedColumn1",
+				"select2 keyGenerate(output(TITLE_SEASON_SK as long),",
+				"     startAt: 1L,",
+				"     stepValue: 1L) ~> surrogateKey1",
+				"DimType sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     stageInsert: true) ~> sink1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     stageInsert: true) ~> sink2"
 			]
 		}
 	}
