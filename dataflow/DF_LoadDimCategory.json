@@ -61,7 +61,7 @@
 				"     startAt: 1L,",
 				"     stepValue: 1L) ~> surrogateKey1",
 				"surrogateKey1 derive(JOB_ID = $Job_ID,",
-				"          CURRENT_DATE = currentTimestamp(),",
+				"          CREATED_DATE = currentTimestamp(),",
 				"          CATEGORY_SK = RowNum+CATEGORY_SK) ~> derivedColumn1",
 				"sourceStgTitleprincipals, sourceDimCategory join(1==1,",
 				"     joinType:'cross',",
@@ -82,7 +82,7 @@
 				"          CATEGORY,",
 				"          CATEGORY_SK,",
 				"          JOB_ID,",
-				"          CURRENT_DATE",
+				"          CREATED_DATE",
 				"     )) ~> SinkDimCategory"
 			]
 		}
