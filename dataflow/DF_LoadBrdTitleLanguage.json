@@ -26,28 +26,35 @@
 					"name": "DimLanguage"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "SnowflakebrdtitleLang",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
 			"transformations": [
 				{
-					"name": "joinLang"
+					"name": "lookup1"
+				},
+				{
+					"name": "lookup2"
+				},
+				{
+					"name": "select1"
 				}
 			],
 			"scriptLines": [
 				"source(output(",
 				"          TITLEID as string,",
-				"          ORDERING as decimal(38,0),",
-				"          TITLE as string,",
-				"          REGION as string,",
-				"          LANGUAGE as string,",
-				"          TYPES as string,",
-				"          ATTRIBUTES as string,",
-				"          ISORIGINALTITLE as string,",
-				"          JOB_ID as string,",
-				"          CREATED_DATE as date",
+				"          LANGUAGE as string",
 				"     ),",
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
-				"     format: 'table') ~> StgTitleAkas",
+				"     query: 'SELECT TITLEID,language FROM STAGE_TITLE_AKAS',",
+				"     format: 'query') ~> StgTitleAkas",
 				"source(output(",
 				"          TITLE_SK as decimal(20,0),",
 				"          TCONST as string,",
@@ -71,11 +78,38 @@
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     format: 'table') ~> DimLanguage",
-				"StgTitleAkas, DimLanguage join(LANGUAGE == LANGUAGE_CODE,",
-				"     joinType:'inner',",
-				"     matchType:'exact',",
-				"     ignoreSpaces: false,",
-				"     broadcast: 'auto')~> joinLang"
+				"select1, DimTitle lookup(select1@TCONST == DimTitle@TCONST,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> lookup1",
+				"lookup1, DimLanguage lookup(LANGUAGE == LANGUAGE_CODE,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> lookup2",
+				"StgTitleAkas select(mapColumn(",
+				"          TCONST = TITLEID,",
+				"          LANGUAGE",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"lookup2 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          TITLE_SK as decimal(20,0),",
+				"          LANGUAGE_SK as decimal(20,0)",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     stageInsert: true,",
+				"     mapColumn(",
+				"          TITLE_SK,",
+				"          LANGUAGE_SK",
+				"     )) ~> sink1"
 			]
 		}
 	}
