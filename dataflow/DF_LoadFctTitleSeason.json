@@ -37,9 +37,6 @@
 			],
 			"transformations": [
 				{
-					"name": "SourceWithSk"
-				},
-				{
 					"name": "surrogateKey1"
 				},
 				{
@@ -50,6 +47,9 @@
 				},
 				{
 					"name": "select1"
+				},
+				{
+					"name": "join1"
 				}
 			],
 			"scriptLines": [
@@ -88,23 +88,18 @@
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     format: 'table') ~> sourceDimTitle",
-				"sourceStageTitleEpisode, MaxFctTitleEpisodeID join(1==1,",
-				"     joinType:'cross',",
-				"     matchType:'exact',",
-				"     ignoreSpaces: false,",
-				"     broadcast: 'auto')~> SourceWithSk",
 				"select1 keyGenerate(output(RowNum as long),",
 				"     startAt: 1L,",
 				"     stepValue: 1L) ~> surrogateKey1",
 				"surrogateKey1 derive(JOB_ID = $Job_ID,",
 				"          CREATED_DATE = currentTimestamp(),",
 				"          TITLE_SEASON_SK = RowNum+TITLE_SEASON_SK) ~> derivedColumn1",
-				"SourceWithSk, sourceDimTitle join(sourceStageTitleEpisode@TCONST == sourceDimTitle@TCONST,",
+				"sourceStageTitleEpisode, sourceDimTitle join(sourceStageTitleEpisode@TCONST == sourceDimTitle@TCONST,",
 				"     joinType:'inner',",
 				"     matchType:'exact',",
 				"     ignoreSpaces: false,",
 				"     broadcast: 'auto')~> JoiningDimTitle",
-				"JoiningDimTitle select(mapColumn(",
+				"join1 select(mapColumn(",
 				"          TCONST = sourceStageTitleEpisode@TCONST,",
 				"          PARENTTCONST,",
 				"          SEASONNUMBER,",
@@ -124,6 +119,11 @@
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> select1",
+				"JoiningDimTitle, MaxFctTitleEpisodeID join(1==1,",
+				"     joinType:'cross',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join1",
 				"derivedColumn1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     deletable:false,",
