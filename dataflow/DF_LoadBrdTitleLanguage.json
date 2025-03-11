@@ -1,0 +1,82 @@
+{
+	"name": "DF_LoadBrdTitleLanguage",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "Snowflake_TitleAkas",
+						"type": "DatasetReference"
+					},
+					"name": "StgTitleAkas"
+				},
+				{
+					"dataset": {
+						"referenceName": "Snowflake_DimTitle",
+						"type": "DatasetReference"
+					},
+					"name": "DimTitle"
+				},
+				{
+					"dataset": {
+						"referenceName": "Snowflake_DimLanguage",
+						"type": "DatasetReference"
+					},
+					"name": "DimLanguage"
+				}
+			],
+			"sinks": [],
+			"transformations": [
+				{
+					"name": "joinLang"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          TITLEID as string,",
+				"          ORDERING as decimal(38,0),",
+				"          TITLE as string,",
+				"          REGION as string,",
+				"          LANGUAGE as string,",
+				"          TYPES as string,",
+				"          ATTRIBUTES as string,",
+				"          ISORIGINALTITLE as string,",
+				"          JOB_ID as string,",
+				"          CREATED_DATE as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> StgTitleAkas",
+				"source(output(",
+				"          TITLE_SK as decimal(20,0),",
+				"          TCONST as string,",
+				"          ORIGINAL_TITLE as string,",
+				"          PRIMARY_TITLE as string,",
+				"          IS_ADULT as string,",
+				"          START_YEAR as string,",
+				"          END_YEAR as string,",
+				"          JOB_ID as string,",
+				"          CREATED_DATE as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> DimTitle",
+				"source(output(",
+				"          LANGUAGE_SK as decimal(20,0),",
+				"          LANGUAGE_CODE as string,",
+				"          JOB_ID as string,",
+				"          CREATED_DATE as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> DimLanguage",
+				"StgTitleAkas, DimLanguage join(LANGUAGE == LANGUAGE_CODE,",
+				"     joinType:'inner',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> joinLang"
+			]
+		}
+	}
+}

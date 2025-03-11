@@ -16,7 +16,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"dataflow": {
-						"referenceName": "DF_LoadBRDTitleLanguage_copy1",
+						"referenceName": "DF_LoadBrdTitleLanguage",
 						"type": "DataFlowReference"
 					},
 					"compute": {
