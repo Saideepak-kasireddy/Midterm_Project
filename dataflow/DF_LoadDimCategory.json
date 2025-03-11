@@ -1,0 +1,90 @@
+{
+	"name": "DF_LoadDimCategory",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "Snowflake_TitlePrincipals",
+						"type": "DatasetReference"
+					},
+					"name": "sourceStgTitleprincipals"
+				},
+				{
+					"dataset": {
+						"referenceName": "Snowflake_DimCategory",
+						"type": "DatasetReference"
+					},
+					"name": "sourceDimCategory"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "Snowflake_DimCategory",
+						"type": "DatasetReference"
+					},
+					"name": "SinkDimCategory"
+				}
+			],
+			"transformations": [
+				{
+					"name": "surrogateKey1"
+				},
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "MaxID"
+				}
+			],
+			"scriptLines": [
+				"parameters{",
+				"     Job_ID as string (\"10\")",
+				"}",
+				"source(output(",
+				"          CATEGORY as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     query: ' SELECT DISTINCT(CATEGORY) FROM STAGE_TITLE_PRINCIPALS stp ',",
+				"     format: 'query') ~> sourceStgTitleprincipals",
+				"source(output(",
+				"          CATEGORY_SK as decimal(20,0)",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     query: ' SELECT NVL(MAX(CATEGORY_SK),0) AS CATEGORY_SK FROM DAMG_SCHEMA.DIM_CATEGORY',",
+				"     format: 'query') ~> sourceDimCategory",
+				"MaxID keyGenerate(output(RowNum as long),",
+				"     startAt: 1L,",
+				"     stepValue: 1L) ~> surrogateKey1",
+				"surrogateKey1 derive(JOB_ID = $Job_ID,",
+				"          CREATED_DATE = currentTimestamp(),",
+				"          CATEGORY_SK = RowNum+CATEGORY_SK) ~> derivedColumn1",
+				"sourceStgTitleprincipals, sourceDimCategory join(1==1,",
+				"     joinType:'cross',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> MaxID",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     stageInsert: true,",
+				"     mapColumn(",
+				"          CATEGORY,",
+				"          CATEGORY_SK,",
+				"          JOB_ID,",
+				"          CREATED_DATE",
+				"     )) ~> SinkDimCategory"
+			]
+		}
+	}
+}

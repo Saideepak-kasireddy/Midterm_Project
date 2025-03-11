@@ -124,11 +124,11 @@
 							{
 								"source": {
 									"name": "ISADULT",
-									"type": "Boolean"
+									"type": "String"
 								},
 								"sink": {
 									"name": "ISADULT",
-									"type": "Boolean"
+									"type": "String"
 								}
 							},
 							{
@@ -196,13 +196,13 @@
 				},
 				"inputs": [
 					{
-						"referenceName": "Parquet_TitleBasic",
+						"referenceName": "ParquetTitleBasicCleanedNulls",
 						"type": "DatasetReference"
 					}
 				],
 				"outputs": [
 					{
-						"referenceName": "Snowflake_TitleBasics",
+						"referenceName": "SnowflakeTitleBasicNULLCleaned",
 						"type": "DatasetReference"
 					}
 				]

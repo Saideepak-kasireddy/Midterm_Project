@@ -1,5 +1,5 @@
 {
-	"name": "Parquet_TitleAkas",
+	"name": "ParquetTitleBasicFlattenedandCleaned",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "AzureDataLakeStorage_LS",
@@ -10,7 +10,6 @@
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobFSLocation",
-				"fileName": "TitleAkasCleaned.parquet",
 				"fileSystem": "silver"
 			},
 			"compressionCodec": "snappy"
