@@ -273,7 +273,7 @@
 				"     skipDuplicateMapOutputs: true) ~> select2",
 				"surrogateKey1 derive(JOB_ID = $JOB_ID,",
 				"          CREATED_DATE = currentTimestamp()) ~> derivedColumn1",
-				"select2 keyGenerate(output(TITLE_SEASON_SK as long),",
+				"select2 keyGenerate(output(TITLE_DETAILS_SK as long),",
 				"     startAt: 1L,",
 				"     stepValue: 1L) ~> surrogateKey1",
 				"join3, source1 join(TITLETYPE == TITLE_TYPE,",
@@ -296,9 +296,10 @@
 				"          AVERAGE_RATING = AVERAGERATING,",
 				"          TITLE_SK,",
 				"          REGION_SK,",
-				"          TITLE_SEASON_SK,",
+				"          TITLE_DETAILS_SK,",
 				"          JOB_ID,",
-				"          CREATED_DATE",
+				"          CREATED_DATE,",
+				"          TYPE_SK",
 				"     )) ~> sink2"
 			]
 		}
